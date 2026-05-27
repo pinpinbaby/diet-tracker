@@ -1,11 +1,12 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 
 const DEFAULT_MEALS = ['早餐', '午餐', '下午茶', '晚餐']
 const deepBlue = '#1D3461'
 const lightBlue = '#5B9BD5'
 const lightBlueBg = '#EBF3FB'
+const card = { background: '#fff', borderRadius: 18, padding: 16, marginBottom: 10 }
 
 export default function Home() {
   const [user, setUser] = useState(null)
@@ -14,6 +15,23 @@ export default function Home() {
   const [goals, setGoals] = useState({ calories: 2000, protein: 60, carbs: 250, fat: 65, weight: 0 })
   const [activeTab, setActiveTab] = useState('diet')
   const [loading, setLoading] = useState(true)
+
+  const dateKey = (d) => d.toISOString().split('T')[0]
+  const fmtDate = (d) => d.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' })
+
+  const fetchMeals = useCallback(async () => {
+    if (!user) return
+    const { data } = await supabase.from('meals').select('*')
+      .eq('user_id', user.id).eq('date', dateKey(currentDate)).order('created_at')
+    if (data && data.length > 0) setMeals(data)
+    else setMeals(DEFAULT_MEALS.map(name => ({ meal_name: name, food: '', calories: '', protein: '', carbs: '', fat: '' })))
+  }, [user, currentDate])
+
+  const fetchGoals = useCallback(async () => {
+    if (!user) return
+    const { data } = await supabase.from('goals').select('*').eq('user_id', user.id).single()
+    if (data) setGoals(data)
+  }, [user])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -24,22 +42,7 @@ export default function Home() {
 
   useEffect(() => {
     if (user) { fetchMeals(); fetchGoals() }
-  }, [user, currentDate])
-
-  const dateKey = (d) => d.toISOString().split('T')[0]
-  const fmtDate = (d) => d.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' })
-
-  async function fetchMeals() {
-    const { data } = await supabase.from('meals').select('*')
-      .eq('user_id', user.id).eq('date', dateKey(currentDate)).order('created_at')
-    if (data && data.length > 0) setMeals(data)
-    else setMeals(DEFAULT_MEALS.map(name => ({ meal_name: name, food: '', calories: '', protein: '', carbs: '', fat: '' })))
-  }
-
-  async function fetchGoals() {
-    const { data } = await supabase.from('goals').select('*').eq('user_id', user.id).single()
-    if (data) setGoals(data)
-  }
+  }, [user, currentDate, fetchMeals, fetchGoals])
 
   async function saveMeal(index, field, value) {
     const updated = [...meals]
@@ -85,8 +88,6 @@ export default function Home() {
     carbs: acc.carbs + (parseFloat(m.carbs) || 0),
     fat: acc.fat + (parseFloat(m.fat) || 0),
   }), { calories: 0, protein: 0, carbs: 0, fat: 0 })
-
-  const card = { background: '#fff', borderRadius: 18, padding: 16, marginBottom: 10 }
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f2f2f7' }}>載入中...</div>
