@@ -101,114 +101,110 @@ export default function Home() {
         <button onClick={logout} style={{ fontSize: 13, color: '#8e8e93', border: 'none', background: 'none', cursor: 'pointer' }}>登出</button>
       </div>
 
-      <div style={{ padding: 16 }}>
+      {activeTab === 'diet' && (
+        <div style={{ padding: '16px 16px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <button onClick={() => { const d = new Date(currentDate); d.setDate(d.getDate() - 1); setCurrentDate(d) }}
+              style={{ width: 36, height: 36, borderRadius: '50%', background: '#fff', border: 'none', fontSize: 20, color: deepBlue, cursor: 'pointer' }}>‹</button>
+            <span style={{ fontWeight: 600, fontSize: 15, color: deepBlue }}>{fmtDate(currentDate)}</span>
+            <button onClick={() => { const d = new Date(currentDate); d.setDate(d.getDate() + 1); setCurrentDate(d) }}
+              style={{ width: 36, height: 36, borderRadius: '50%', background: '#fff', border: 'none', fontSize: 20, color: deepBlue, cursor: 'pointer' }}>›</button>
+          </div>
 
-        {activeTab === 'diet' && (
-          <>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <button onClick={() => { const d = new Date(currentDate); d.setDate(d.getDate() - 1); setCurrentDate(d) }}
-                style={{ width: 36, height: 36, borderRadius: '50%', background: '#fff', border: 'none', fontSize: 20, color: deepBlue, cursor: 'pointer' }}>‹</button>
-              <span style={{ fontWeight: 600, fontSize: 15, color: deepBlue }}>{fmtDate(currentDate)}</span>
-              <button onClick={() => { const d = new Date(currentDate); d.setDate(d.getDate() + 1); setCurrentDate(d) }}
-                style={{ width: 36, height: 36, borderRadius: '50%', background: '#fff', border: 'none', fontSize: 20, color: deepBlue, cursor: 'pointer' }}>›</button>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-              {[['熱量', 'calories', 'kcal'], ['蛋白質', 'protein', 'g'], ['碳水', 'carbs', 'g'], ['脂質', 'fat', 'g']].map(([label, key, unit]) => {
-                const val = Math.round(totals[key])
-                const goal = parseFloat(goals[key]) || 0
-                const pct = goal > 0 ? Math.min(Math.round(val / goal * 100), 100) : 0
-                return (
-                  <div key={key} style={{ ...card, padding: 14 }}>
-                    <div style={{ fontSize: 11, color: '#8e8e93', marginBottom: 4 }}>{label}</div>
-                    <div style={{ fontSize: 22, fontWeight: 700, color: deepBlue, marginBottom: 2 }}>{val}</div>
-                    <div style={{ fontSize: 11, color: '#8e8e93', marginBottom: 6 }}>{val} / {goal} {unit}</div>
-                    <div style={{ height: 5, background: lightBlueBg, borderRadius: 3, overflow: 'hidden', marginBottom: 3 }}>
-                      <div style={{ height: 5, width: `${pct}%`, background: lightBlue, borderRadius: 3 }} />
-                    </div>
-                    <div style={{ fontSize: 11, color: lightBlue }}>{pct}%</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+            {[['熱量', 'calories', 'kcal'], ['蛋白質', 'protein', 'g'], ['碳水', 'carbs', 'g'], ['脂質', 'fat', 'g']].map(([label, key, unit]) => {
+              const val = Math.round(totals[key])
+              const goal = parseFloat(goals[key]) || 0
+              const pct = goal > 0 ? Math.min(Math.round(val / goal * 100), 100) : 0
+              return (
+                <div key={key} style={{ ...card, padding: 14 }}>
+                  <div style={{ fontSize: 11, color: '#8e8e93', marginBottom: 4 }}>{label}</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: deepBlue, marginBottom: 2 }}>{val}</div>
+                  <div style={{ fontSize: 11, color: '#8e8e93', marginBottom: 6 }}>{val} / {goal} {unit}</div>
+                  <div style={{ height: 5, background: lightBlueBg, borderRadius: 3, overflow: 'hidden', marginBottom: 3 }}>
+                    <div style={{ height: 5, width: `${pct}%`, background: lightBlue, borderRadius: 3 }} />
                   </div>
-                )
-              })}
-            </div>
+                  <div style={{ fontSize: 11, color: lightBlue }}>{pct}%</div>
+                </div>
+              )
+            })}
+          </div>
 
-            {meals.map((meal, i) => (
-              <div key={i} style={card}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  {i >= 4 ? (
-                    <input style={{ fontSize: 15, fontWeight: 700, color: deepBlue, border: 'none', background: 'transparent', outline: 'none', flex: 1 }}
-                      defaultValue={meal.meal_name}
-                      onBlur={e => saveMeal(i, 'meal_name', e.target.value)} />
-                  ) : (
-                    <span style={{ fontSize: 15, fontWeight: 700, color: deepBlue }}>{meal.meal_name}</span>
-                  )}
-                  {i >= 4 && (
-                    <button onClick={() => deleteMeal(i)} style={{ fontSize: 22, color: '#ccc', border: 'none', background: 'none', cursor: 'pointer' }}>×</button>
-                  )}
-                </div>
-                <input style={{ width: '100%', background: '#f2f2f7', borderRadius: 12, padding: '8px 12px', fontSize: 13, color: deepBlue, border: 'none', outline: 'none', marginBottom: 10 }}
-                  placeholder="食物描述" defaultValue={meal.food}
-                  onBlur={e => saveMeal(i, 'food', e.target.value)} />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
-                  {[['熱量', 'calories'], ['蛋白質', 'protein'], ['碳水', 'carbs'], ['脂質', 'fat']].map(([label, key]) => (
-                    <div key={key}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: lightBlue, marginBottom: 4 }}>{label}</div>
-                      <input style={{ width: '100%', background: '#f2f2f7', borderRadius: 10, padding: '6px 4px', fontSize: 12, color: deepBlue, border: 'none', outline: 'none', textAlign: 'center' }}
-                        type="number" placeholder="0" defaultValue={meal[key]}
-                        onBlur={e => saveMeal(i, key, e.target.value)} />
-                    </div>
-                  ))}
-                </div>
+          {meals.map((meal, i) => (
+            <div key={i} style={card}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                {i >= 4 ? (
+                  <input style={{ fontSize: 15, fontWeight: 700, color: deepBlue, border: 'none', background: 'transparent', outline: 'none', flex: 1 }}
+                    defaultValue={meal.meal_name}
+                    onBlur={e => saveMeal(i, 'meal_name', e.target.value)} />
+                ) : (
+                  <span style={{ fontSize: 15, fontWeight: 700, color: deepBlue }}>{meal.meal_name}</span>
+                )}
+                {i >= 4 && (
+                  <button onClick={() => deleteMeal(i)} style={{ fontSize: 22, color: '#ccc', border: 'none', background: 'none', cursor: 'pointer' }}>×</button>
+                )}
+              </div>
+              <input style={{ width: '100%', background: '#f2f2f7', borderRadius: 12, padding: '8px 12px', fontSize: 13, color: deepBlue, border: 'none', outline: 'none', marginBottom: 10 }}
+                placeholder="食物描述" defaultValue={meal.food}
+                onBlur={e => saveMeal(i, 'food', e.target.value)} />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                {[['熱量', 'calories'], ['蛋白質', 'protein'], ['碳水', 'carbs'], ['脂質', 'fat']].map(([label, key]) => (
+                  <div key={key}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: lightBlue, marginBottom: 4 }}>{label}</div>
+                    <input style={{ width: '100%', background: '#f2f2f7', borderRadius: 10, padding: '6px 4px', fontSize: 12, color: deepBlue, border: 'none', outline: 'none', textAlign: 'center' }}
+                      type="number" placeholder="0" defaultValue={meal[key]}
+                      onBlur={e => saveMeal(i, key, e.target.value)} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          <button onClick={addMeal} style={{ width: '100%', background: '#fff', borderRadius: 18, padding: 14, fontSize: 13, color: '#8e8e93', border: 'none', cursor: 'pointer' }}>
+            ＋ 新增一餐
+          </button>
+        </div>
+      )}
+
+      {activeTab === 'goal' && (
+        <div style={{ padding: '16px 16px 0' }}>
+          <div style={{ ...card, padding: 20 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: deepBlue, marginBottom: 16 }}>每日營養目標</h2>
+            {[['熱量 (kcal)', 'calories'], ['蛋白質 (g)', 'protein'], ['碳水化合物 (g)', 'carbs'], ['脂質 (g)', 'fat'], ['體重目標 (kg)', 'weight']].map(([label, key]) => (
+              <div key={key} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: lightBlue, marginBottom: 6 }}>{label}</div>
+                <input style={{ width: '100%', background: '#f2f2f7', borderRadius: 12, padding: '10px 14px', fontSize: 14, color: deepBlue, border: 'none', outline: 'none' }}
+                  type="number" value={goals[key] || ''}
+                  onChange={e => setGoals({ ...goals, [key]: e.target.value })} />
               </div>
             ))}
-
-            <button onClick={addMeal} style={{ width: '100%', background: '#fff', borderRadius: 18, padding: 14, fontSize: 13, color: '#8e8e93', border: 'none', cursor: 'pointer' }}>
-              ＋ 新增一餐
-            </button>
-          </>
-        )}
-
-        {activeTab === 'goal' && (
-          <>
-            <div style={{ ...card, padding: 20 }}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, color: deepBlue, marginBottom: 16 }}>每日營養目標</h2>
-              {[['熱量 (kcal)', 'calories'], ['蛋白質 (g)', 'protein'], ['碳水化合物 (g)', 'carbs'], ['脂質 (g)', 'fat'], ['體重目標 (kg)', 'weight']].map(([label, key]) => (
-                <div key={key} style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: lightBlue, marginBottom: 6 }}>{label}</div>
-                  <input style={{ width: '100%', background: '#f2f2f7', borderRadius: 12, padding: '10px 14px', fontSize: 14, color: deepBlue, border: 'none', outline: 'none' }}
-                    type="number" value={goals[key] || ''}
-                    onChange={e => setGoals({ ...goals, [key]: e.target.value })} />
-                </div>
-              ))}
-              <button onClick={saveGoals} style={{ width: '100%', background: deepBlue, color: '#fff', borderRadius: 14, padding: 13, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-                儲存目標
-              </button>
-            </div>
-
-            <div style={{ ...card, padding: 20 }}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, color: deepBlue, marginBottom: 12 }}>目前設定</h2>
-              {[['熱量', 'calories', 'kcal'], ['蛋白質', 'protein', 'g'], ['碳水化合物', 'carbs', 'g'], ['脂質', 'fat', 'g'], ['體重目標', 'weight', 'kg']].map(([label, key, unit], idx, arr) => (
-                <div key={key} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: idx < arr.length - 1 ? '0.5px solid #f2f2f7' : 'none' }}>
-                  <span style={{ fontSize: 13, color: '#8e8e93' }}>{label}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: deepBlue }}>{goals[key] || '—'} {goals[key] ? unit : ''}</span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {activeTab === 'weight' && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 48 }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>⚖️</div>
-            <p style={{ color: '#8e8e93', fontSize: 13, marginBottom: 20 }}>前往體重追蹤頁面</p>
-            <button onClick={() => window.location.href = '/weight'}
-              style={{ background: deepBlue, color: '#fff', borderRadius: 18, padding: '13px 32px', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
-              開啟體重追蹤
+            <button onClick={saveGoals} style={{ width: '100%', background: deepBlue, color: '#fff', borderRadius: 14, padding: 13, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+              儲存目標
             </button>
           </div>
-        )}
 
-      </div>
+          <div style={{ ...card, padding: 20 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: deepBlue, marginBottom: 12 }}>目前設定</h2>
+            {[['熱量', 'calories', 'kcal'], ['蛋白質', 'protein', 'g'], ['碳水化合物', 'carbs', 'g'], ['脂質', 'fat', 'g'], ['體重目標', 'weight', 'kg']].map(([label, key, unit], idx, arr) => (
+              <div key={key} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: idx < arr.length - 1 ? '0.5px solid #f2f2f7' : 'none' }}>
+                <span style={{ fontSize: 13, color: '#8e8e93' }}>{label}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: deepBlue }}>{goals[key] || '—'} {goals[key] ? unit : ''}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'weight' && (
+        <div style={{ padding: '16px 16px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 48 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>⚖️</div>
+          <p style={{ color: '#8e8e93', fontSize: 13, marginBottom: 20 }}>前往體重追蹤頁面</p>
+          <button onClick={() => window.location.href = '/weight'}
+            style={{ background: deepBlue, color: '#fff', borderRadius: 18, padding: '13px 32px', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+            開啟體重追蹤
+          </button>
+        </div>
+      )}
 
       <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 512, background: '#fff', borderTop: '0.5px solid #f2f2f7', display: 'flex' }}>
         {[{ id: 'diet', label: '飲食', icon: '🥗' }, { id: 'goal', label: '目標', icon: '🎯' }, { id: 'weight', label: '體重', icon: '⚖️' }].map(tab => (
